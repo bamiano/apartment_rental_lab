@@ -101,6 +101,9 @@ menu.addItem('(implement me) Evict tenant',
 
 menu.addItem('(implement me) Show total sqft rented', 
   function() {
+
+
+    
       console.log("Implement me");
     } 
 );
