@@ -1,11 +1,5 @@
-"use strict"
-var menu = require('node-menu');
-var app = require('./app.js');
-
 var building = new app.Building("Waterfront Tower");
-// var building refers to an instance of building named Waterfront Tower
 var people = [];
-
 
 people.push(new app.Person("Anna", "765-4321"));
 var john = new app.Manager("John", "700-4321");
@@ -21,18 +15,14 @@ building.units.push(new app.Unit("12", building, 400, 2000));
 building.units.push(new app.Unit("13", building, 800, 3000));
 building.units.push(new app.Unit("14", building, 1800, 4500));
 
+// building.addTenant("devin", "14");
+
 // --------------------------------
 menu.addDelimiter('-', 40, building.address + " rental app");
 
-menu.addItem('Add manager',
- //Add manager is a string (first parameter)
- // second parameter is a callback which takes in a function.
- // third item is a null (third parameter)
- // fourth item is an array of objects (fourth parameter)
- // none of these items do anything until they are called in node with one of the number functions.
+menu.addItem('Add manager', 
   function(name, contact) {
     var aManager = new app.Manager(name, contact);
-    // we create a new instance of a manager called app.manager
     aManager.addBuilding(building);
     building.setManager(aManager);
     people.push(new app.Manager(name, contact));
@@ -53,12 +43,9 @@ menu.addItem('Show tenants:',
   function() {
     for (var i = 0; i <= people.length; i++) {
       if (people[i] instanceof app.Tenant){
-        // we want to see if people(an object) is an instance of app.Tenant(a function) this tells us if people is a tenant
         console.log("\n" + people[i].name + " " + people[i].contact);
         var references = people[i].references;
-        // var references is equal to whatever person we're looking at
         if(!references) {continue;}
-        // above line is confusing and not explained
         for (var j = references.length - 1; j >= 0; j--) {
           console.log("-> Reference: " + references[j].name + " " + references[j].contact);
         };
@@ -82,7 +69,7 @@ menu.addItem('Show all units',
   function() {
     for(var i = building.units.length - 1; i >= 0; i--) {
       console.log(" tenant: " + building.units[i].tenant +
-      			  " num: " + building.units[i].number + 
+              " num: " + building.units[i].number + 
                   " sqft: " + building.units[i].sqft +
                   " rent: $" + building.units[i].rent);
     }
@@ -91,32 +78,33 @@ menu.addItem('Show all units',
 
 menu.addItem('(implement me) Show available units', 
   function() {
-      console.log("Implement me");
-      var emptyUnits = building.availableUnits();
-     for (var i = 0; i < emptyUnits.length; i++){
+      // console.log("Implement me");
+      var available = building.availableUnits();
+      for (var i =0; i<available.length;i++) {
         console.log(" tenant: " + building.units[i].tenant +
               " num: " + building.units[i].number + 
                   " sqft: " + building.units[i].sqft +
                   " rent: $" + building.units[i].rent);
-     }
-   }
+      }
+
+      }
 );
 
 menu.addItem('(implement me) Add tenant reference', 
   function(tenant_name, ref_name, ref_contact) {
-      console.log("Implement me. Show error if tenant is unknown. Note: a reference is a person");
-      var reference = new app.Person(ref_name, ref_contact);
-
-      // If the tenant name entered in console is equal to the tenant.name that is inside the array and is also considered an instance of the tenant class, then we have the right person.
-      // We want to add references to the tenant.references array. In order to do so we need to check the people's array and see inside if there's a match of what we enter )tenant_name and what's inside tenant.name.
-      people.forEach(function(tenant){
-        // on the top of the page we created tenants that are being pushed into people array. if the person is a tenant, you can push references inside of him.
-        if (tenant.name === tenant_name && tenant instanceof app.Tenant){
-          tenant.references.push(reference);
-        }
-      });
-    
-
+      
+      // look through the people array 
+      for (var i =0; i < people.length; i++) {
+        // see if our tenant_name parameter is equal to any of the names of the people in my array
+        if(tenant_name === people[i].name ){
+        // if we find a match - add a reference by creating a new instance of the Person
+        // passing in the parameters ref_name and ref_contact for name and contact
+        var ref = new app.Person(ref_name, ref_contact);
+        people[i].addReference(ref);
+        // get out of the loop
+        break;
+      }
+    }
     },
     null, 
     [{'name': 'tenant_name', 'type': 'string'},
@@ -127,7 +115,35 @@ menu.addItem('(implement me) Add tenant reference',
 menu.addItem('(implement me) Move tenant in unit', 
   function(unit_number, tenant_name) {
       // find tenant and unit objects, use building's addTenant() function.
-      console.log("Implement me.");
+      // console.log("Implement me.");
+      
+      // go though our units array and see if our parameter "unit_number" matches any of the units in our array
+      // if does, we want to store that unit that we found
+      // we want to then see if the unit is available if(unit.available()).....
+
+      // if the unit exists and is available, we also want to make sure that our "tenant_name" is in the people array
+      // we also want to store the tenant object that we get
+
+      // unit.tenant = tenant
+
+      var unitNewTenant = null;
+      var newTenant = null;
+
+      for (var i =0; i < building.units.length; i++) {
+        if((unit_number == building.units[i].number && building.units[i].available())){
+          console.log("Found unit");
+          unitNewTenant = building.units[i];
+        }
+      }
+
+      for (var i =0; i < people.length; i++) {
+        if(tenant_name === people[i].name){
+          console.log("Found tenant");
+          newTenant = people[i];
+        }
+      }
+      
+      unitNewTenant.tenant = newTenant;
     },
     null, 
     [{'name': 'unit_number', 'type': 'string'},
@@ -136,34 +152,96 @@ menu.addItem('(implement me) Move tenant in unit',
 
 menu.addItem('(implement me) Evict tenant', 
   function(tenant_name) {
-      // Similar to above, use building's removeTenant() function.
-      console.log("Implement me");
-    },
-    null, 
-    [{'name': 'tenant_name', 'type': 'string'}] 
-);
-
-menu.addItem('(implement me) Show total sqft rented', 
-  function() {
-
-
+    // Similar to above, use building's removeTenant() function.
+    // console.log("Implement me");
+    var evictTenant;
     
-      console.log("Implement me");
-    } 
+    people.forEach(function(person){
+      if(tenant_name == person.name){
+        console.log("Found tenant");
+        evictTenant = person;
+      }
+    });
+
+    building.units.forEach(function(unit){
+      if((evictTenant == unit.tenant)){
+        console.log("Found unit");
+        building.removeTenant(unit, evictTenant);
+      }
+    });
+  },
+  null, 
+  [{'name': 'tenant_name', 'type': 'string'}] 
 );
 
-menu.addItem('(implement me) Show total yearly income', 
+//evict tenant 1st version using for loop.
+// menu.addItem('Evict tenant', 
+//   function(tenant_name) {
+
+//     var unitEvictTenant;
+//     var evictTenant;
+//       //go through the tenants and check tenant_name is in the people array
+//       //we want to store the object we get
+//     for (var i = 0; i <people.length; i++) {
+//        if(tenant_name == people[i].name) {
+//         evictTenant = people[i];
+//         }
+//     }
+//     for (var i =0; i < building.units.length; i++) {
+//       if((evictTenant == building.units[i].tenant)){
+//         unitEvictTenant = building.units[i]; 
+//         building.removeTenant(unitEvictTenant, evictTenant);
+//       }
+//     }
+//       //go through the units and see which unit the tenant is in
+//       //set the tenant onject within the unit to null
+//       //Similar to above, use building's removeTenant() function.
+//       console.log("Implement me");
+//     },
+//     null, 
+//     [{'name': 'tenant_name', 'type': 'string'}] 
+// );
+
+menu.addItem('Show total sqft rented', 
   function() {
-      // Note: only rented units produce income
-      console.log("Implement me.");
-    } 
+    var rentedSqft = 0;
+    building.units.forEach(function(unit) {
+      rentedSqft = rentedSqft + unit.sqft;
+    });
+    console.log(rentedSqft);
+    return rentedSqft;
+    // console.log("Implement me");
+  }
 );
 
-menu.addItem('(Add your own feature ...)', 
-  function() {
-      console.log("Implement a feature that you find is useful");
-    } 
+menu.addItem('Show total yearly income', 
+ function() {
+    var rent = 0;
+    building.units.forEach(function(unit) {
+      if(unit.available()){
+      rent = rent + unit.rent;
+      }
+    });
+    console.log(rent);
+    return rent;
+    // console.log("Implement me");
+  }
 );
+
+menu.addItem('Show rented(unavailable) units', 
+      function() {
+      // console.log("Implement me");
+      var unavailable = building.rentedUnits();
+      for (var i =0; i<unavailable.length;i++) {
+        console.log(" tenant: " + unavailable[i].tenant +
+              " num: " + unavailable[i].number + 
+              " sqft: " + unavailable[i].sqft +
+               " rent: $" + unavailable[i].rent);
+             }
+          }
+);
+
+    // console.log("Implement a feature that you find is useful");
 
 // *******************************
 menu.addDelimiter('*', 40);
